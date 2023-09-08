@@ -110,7 +110,8 @@ function emptyCoverage(filePath) {
         branchMap: {},
         s: {},
         f: {},
-        b: {}
+        b: {},
+        sTestMap: []
     };
 }
 // asserts that a data object "looks like" a coverage object
@@ -270,6 +271,9 @@ FileCoverage.prototype.merge = function(other) {
         for (i = 0; i < retArray.length; i += 1) {
             retArray[i] += secondArray[i];
         }
+    });
+    other.sTestMap && Object.keys(other.sTestMap).forEach(k => {
+        this.data.sTestMap[k] = [...this.data.sTestMap[k], ...other.sTestMap[k]];
     });
 };
 
