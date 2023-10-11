@@ -111,7 +111,7 @@ function emptyCoverage(filePath) {
         s: {},
         f: {},
         b: {},
-        sTestMap: []
+        sTestMap: {}
     };
 }
 // asserts that a data object "looks like" a coverage object
@@ -234,7 +234,7 @@ FileCoverage.prototype.getBranchCoverageByLine = function() {
 };
 
 // expose coverage data attributes
-['path', 'statementMap', 'fnMap', 'branchMap', 's', 'f', 'b'].forEach(p => {
+['path', 'statementMap', 'fnMap', 'branchMap', 's', 'f', 'b', 'sTestMap'].forEach(p => {
     Object.defineProperty(FileCoverage.prototype, p, {
         enumerable: true,
         get() {
