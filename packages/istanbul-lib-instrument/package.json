@@ -18,7 +18,7 @@
     "@babel/template": "^7.4.0",
     "@babel/traverse": "^7.4.3",
     "@babel/types": "^7.4.0",
-    "istanbul-lib-coverage": "https://github.com/freshworks/istanbuljs/raw/fs-tests-tracker/packages/istanbul-lib-coverage/istanbul-lib-coverages-2.0.5.tgz",
+    "istanbul-lib-coverage": "^2.0.5",
     "semver": "^6.0.0"
   },
   "license": "BSD-3-Clause",
