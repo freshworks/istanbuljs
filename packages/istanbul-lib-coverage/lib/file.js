@@ -103,16 +103,19 @@ CoverageSummary.prototype.isEmpty = function() {
 
 // returns a data object that represents empty coverage
 function emptyCoverage(filePath) {
-    return {
+    const coverageObj = {
         path: filePath,
         statementMap: {},
         fnMap: {},
         branchMap: {},
         s: {},
         f: {},
-        b: {},
-        sTestMap: []
-    };
+        b: {}
+    }
+    if(process.env.GENERATE_TRACE === 'true') {
+        coverageObj.sTestMap = {};
+    }
+    return coverageObj;
 }
 // asserts that a data object "looks like" a coverage object
 function assertValidObject(obj) {
@@ -234,7 +237,7 @@ FileCoverage.prototype.getBranchCoverageByLine = function() {
 };
 
 // expose coverage data attributes
-['path', 'statementMap', 'fnMap', 'branchMap', 's', 'f', 'b'].forEach(p => {
+['path', 'statementMap', 'fnMap', 'branchMap', 's', 'f', 'b', 'sTestMap'].forEach(p => {
     Object.defineProperty(FileCoverage.prototype, p, {
         enumerable: true,
         get() {

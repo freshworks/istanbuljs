@@ -183,99 +183,18 @@ class VisitState {
             isPreIncrement
         );
 
-        if(type !== 's') {
+        if (type !== 's' || process.env.GENERATE_TRACE !== 'true') {
             return existingAST;
         }
 
-        const isTestIdExistExpression = T.logicalExpression(
-            "&&",
-            T.memberExpression(
-                T.identifier('window'),
-                T.identifier('QUnit'),
-            ),
-            T.memberExpression(
-                T.memberExpression(
-                    T.memberExpression(
-                        T.identifier('window'),
-                        T.identifier('QUnit')
-                    ),
-                    T.identifier('config')
-                ),
-                T.identifier('current')
-            )
-        );
-
-        const isBrowserEnvExpression = T.binaryExpression(
-            '!==',
-            T.unaryExpression(
-                'typeof',
-                T.identifier('window'),
-                true // Prefix: true
-            ),
-            T.stringLiteral('undefined')
-        );
-
-        const additionalAST1 = T.logicalExpression(
-            "&&",
-            isBrowserEnvExpression,
-            isTestIdExistExpression
-        );
-
-        const testProperty = 'sTestMap';
-
-        const testIdExpression = T.memberExpression(
-            T.memberExpression(
-                T.memberExpression(
-                    T.memberExpression(
-                        T.identifier('window'),
-                        T.identifier('QUnit')
-                    ),
-                    T.identifier('config')
-                ),
-                T.identifier('current')
-            ),
-            T.identifier('testId')
-        );
-
-
-        const testIncludedCheckExpression = T.unaryExpression(
-            "!",
-            T.callExpression(
-                T.memberExpression(
-                    T.memberExpression(
-                        T.memberExpression(T.identifier(this.varName), T.identifier(testProperty)),
-                        T.numericLiteral(id),
-                        true // Computed: true
-                    ),
-                    T.identifier("includes")
-                ),
-                [testIdExpression]
-            )
-        );
-        const pushTestExpression = T.callExpression(
-            T.memberExpression(
-                T.memberExpression(
-                    T.memberExpression(T.identifier(this.varName), T.identifier(testProperty)),
-                    T.numericLiteral(id),
-                    true // Computed: true
-                ),
-                T.identifier("push")
-            ),
-            [testIdExpression]
-        );
-        const additionalAST2 = T.logicalExpression(
-            "&&",
-            testIncludedCheckExpression,
-            pushTestExpression
-        );
-
-        const additionalAST3 = T.logicalExpression(
-            "&&",
-            additionalAST1,
-            additionalAST2
-        );
-
-        return T.logicalExpression("&&", existingAST, additionalAST3);
+        const isBrowserEnvExpression = T.binaryExpression('!==', T.unaryExpression('typeof', T.identifier('window'), true), T.stringLiteral('undefined'));
+        const argsExpression = T.memberExpression(T.memberExpression(T.identifier(this.varName), T.identifier('sTestMap')), T.numericLiteral(id), true);
+        const trackTestExpression = T.callExpression(
+            T.memberExpression(T.identifier('window'), T.identifier("trackTest")),
+            [argsExpression]
+        )
+        const additionalAST = T.logicalExpression("&&", isBrowserEnvExpression, trackTestExpression);
+        return T.logicalExpression("&&", existingAST, additionalAST);
     }
 
     insertCounter(path, increment) {
@@ -638,6 +557,12 @@ const coverageTemplate = template(`
         var coverage = global[gcv] || (global[gcv] = {});
         if (coverage[path] && coverage[path].hash === hash) {
             return coverage[path];
+        }
+        global.trackTest = function(sNth) {
+        	var QUnit = global.QUnit;
+            if (QUnit && QUnit.config.current && sNth.indexOf(QUnit.config.current.testId) === -1) {
+                sNth.push(QUnit.config.current.testId);
+            }
         }
         return coverage[path] = coverageData;
     })();
