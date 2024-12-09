@@ -20,6 +20,9 @@ function emptyCoverage(filePath, reportLogic) {
         b: {}
     };
     if (reportLogic) cov.bT = {};
+    if(process.env.GENERATE_TRACE === 'true') {
+      cov.sTestMap = {};
+    }
     return cov;
 }
 
@@ -251,6 +254,10 @@ class FileCoverage {
             );
             this.data.bT = hits;
         }
+
+        other.sTestMap && Object.keys(other.sTestMap).forEach(k => {
+          this.data.sTestMap[k] = [...this.data.sTestMap[k], ...other.sTestMap[k]];
+        });
     }
 
     computeSimpleTotals(property) {
@@ -337,7 +344,8 @@ dataProperties(FileCoverage, [
     'f',
     'b',
     'bT',
-    'all'
+    'all',
+    'sTestMap'
 ]);
 
 module.exports = {
