@@ -169,7 +169,8 @@ class VisitState {
                 ? // If `index` present, turn `x` into `x[index]`.
                   x => T.memberExpression(x, T.numericLiteral(index), true)
                 : x => x;
-        return T.updateExpression(
+        const isPreIncrement = type === 's';
+        const existingAST = T.updateExpression(
             '++',
             wrap(
                 T.memberExpression(
@@ -180,8 +181,21 @@ class VisitState {
                     T.numericLiteral(id),
                     true
                 )
-            )
+            ),
+          isPreIncrement
         );
+        if (type !== 's' || process.env.GENERATE_TRACE !== 'true') {
+          return existingAST;
+        }
+
+        const isBrowserEnvExpression = T.binaryExpression('!==', T.unaryExpression('typeof', T.identifier('window'), true), T.stringLiteral('undefined'));
+        const argsExpression = T.memberExpression(T.memberExpression(T.callExpression(T.identifier(this.varName), []), T.identifier('sTestMap')), T.numericLiteral(id), true);
+        const trackTestExpression = T.callExpression(
+          T.memberExpression(T.identifier('window'), T.identifier("trackTest")),
+          [argsExpression]
+        )
+        const additionalAST = T.logicalExpression("&&", isBrowserEnvExpression, trackTestExpression);
+        return T.logicalExpression("&&", existingAST, additionalAST);
     }
 
     // Reads the logic expression conditions and conditionally increments truthy counter.
@@ -698,6 +712,13 @@ const coverageTemplate = template(
             // @ts-ignore
             COVERAGE_FUNCTION = function () {
                 return actualCoverage;
+            }
+        }
+
+        global.trackTest = function(sNth) {
+        	var QUnit = global.QUnit;
+            if (QUnit && QUnit.config.current && sNth.indexOf(QUnit.config.current.testId) === -1) {
+                sNth.push(QUnit.config.current.testId);
             }
         }
 

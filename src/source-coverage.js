@@ -37,6 +37,9 @@ class SourceCoverage extends classes.FileCoverage {
     newStatement(loc) {
         const s = this.meta.last.s;
         this.data.statementMap[s] = cloneLocation(loc);
+        if (this.data.sTestMap) {
+          this.data.sTestMap[s] = [];
+        }
         this.data.s[s] = 0;
         this.meta.last.s += 1;
         return s;
